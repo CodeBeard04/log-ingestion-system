@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:5.0.2
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - shared-network
+  
+  api-server:
+    container_name: api_server
+    restart: unless-stopped
+    image: api-server-p:1.0.0
+    build:
+      context: Server
+      dockerfile: Dockerfile
+    depends_on:
+      - mongodb
+    ports:
+      - 3000:3000
+    networks:
+      - shared-network
+
+  react-app:
+    container_name: api_client
+    restart: unless-stopped
+    image: api-client-p:1.0.0
+    build:
+      context: Client
+      dockerfile: Dockerfile
+    depends_on:
+      - api-server
+    ports:
+      - 3001:3001
+    networks:
+      - shared-network
+
+volumes: 
+  mongo-data:
+    driver: local
+
+networks:
+  shared-network:
