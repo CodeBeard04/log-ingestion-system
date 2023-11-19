@@ -25,6 +25,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker-compose.yml
+          file: dockerfile
           push: true
           tags: log-ingestion-system:latest
