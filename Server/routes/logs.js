@@ -1,5 +1,6 @@
 const express = require('express');
 const moment = require('moment');
+const { isEmpty } = require('lodash');
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const LogModel = require('../models/LogModel.js');
 
 /* --------- GET Logs ----------- */
 
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
     try {
         const logs = await LogModel.find();
         res.status(200).json(logs);
@@ -19,36 +20,40 @@ router.get('/', async(req, res) => {
 // Endpoint for full-text search
 
 router.get('/search', async (req, res) => {
-    const { query } = req.query;
-  
+    const { query, startDateTime, endDateTime, selectedOption } = req.query;
+
     try {
-        console.log(query);
-      const results = await LogModel.find({ $text: { $search: query } });
-      console.log(results);
-      res.json({ success: true, results });
+        console.log(req.query)
+        let obj = {};
+
+        const startDate = new Date(startDateTime);
+        const endDate = new Date(endDateTime);
+
+        if (!isEmpty(startDateTime) && !isEmpty(endDateTime)) {
+            obj.timestamp = {
+                $gte: startDate,
+                $lte: endDate,
+            };
+        }
+
+        if (!isEmpty(query) && !isEmpty(selectedOption)) {
+            obj = {
+                [selectedOption]: query
+            }
+        }
+
+        const records = await LogModel.find(obj);
+
+        res.json({ success: true, records });
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
-  });
-  
+});
+
 
 /* --------- Add Log ----------- */
 
 router.post('/addLog', async (req, res) => {
-
-    // const newLog = new LogModel({
-    //     level : req.body.level,
-    //     message : req.body.message,
-    //     resourceId : req.body.resourceId,
-    //     timestamp: moment().format(),
-    //     traceId : req.body.traceId,
-    //     spanId : req.body.spanId,
-    //     commit : req.body.commit,
-    //     metadata: {
-    //         parentResourceId: req.body.metadata.parentResourceId
-    //     }
-    // });
-
     const jsonData = req.body;
 
     try {

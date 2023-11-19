@@ -14,7 +14,9 @@ const LogSchema = new mongoose.Schema({
     },
 });
 
-LogSchema.index({ level: 'text', message: 'text' });
+LogSchema.index({ message: 'text' });
+
+// LogSchema.index({'$**': 'text'});
 
 // LogSchema = new Schema({
 //     level: {
